@@ -1,0 +1,5 @@
+{
+  "name": "Product Photo Studio AI",
+  "description": "Clean up product photos and remove backgrounds using AI-powered text instructions.",
+  "requestFramePermissions": []
+}
