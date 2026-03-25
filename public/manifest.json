@@ -1,0 +1,17 @@
+{
+  "name": "Product Photo Studio AI",
+  "short_name": "Photo Studio",
+  "description": "Clean up product photos and remove backgrounds using AI-powered text instructions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
