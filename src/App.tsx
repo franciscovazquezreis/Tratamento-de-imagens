@@ -23,6 +23,7 @@ import { twMerge } from 'tailwind-merge';
 import { ApiKeyProvider, useApiKey } from './context/ApiKeyContext';
 import { ApiKeyGate } from './components/ApiKeyGate';
 import { generateContent } from './services/gemini';
+import { compressImage } from './utils/imageUtils';
 
 // Utility for Tailwind class merging
 function cn(...inputs: ClassValue[]) {
@@ -43,6 +44,7 @@ function MainApp() {
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [instruction, setInstruction] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<EditHistoryItem[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -65,12 +67,17 @@ function MainApp() {
   const processImage = async () => {
     if (!originalImage || !instruction) return;
 
-    setIsProcessing(true);
+    setIsCompressing(true);
     setError(null);
 
     try {
-      const base64Data = originalImage.split(',')[1];
-      const mimeType = originalImage.split(';')[0].split(':')[1];
+      // Comprime a imagem antes de enviar
+      const compressedImage = await compressImage(originalImage);
+      setIsCompressing(false);
+      setIsProcessing(true);
+
+      const base64Data = compressedImage.split(',')[1];
+      const mimeType = compressedImage.split(';')[0].split(':')[1];
 
       const response = await generateContent({
         model: 'gemini-2.5-flash-image',
@@ -215,7 +222,12 @@ function MainApp() {
                       <div className="space-y-2">
                         <span className="text-xs font-semibold text-gray-400 uppercase">Resultado</span>
                         <div className="aspect-square rounded-xl bg-gray-100 overflow-hidden border border-gray-200 relative flex items-center justify-center">
-                          {isProcessing ? (
+                          {isCompressing ? (
+                            <div className="flex flex-col items-center gap-3">
+                              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                              <p className="text-sm text-gray-500 animate-pulse">A preparar imagem...</p>
+                            </div>
+                          ) : isProcessing ? (
                             <div className="flex flex-col items-center gap-3">
                               <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
                               <p className="text-sm text-gray-500 animate-pulse">A IA está a trabalhar a sua magia...</p>
@@ -237,7 +249,7 @@ function MainApp() {
                       </div>
                     </div>
 
-                    {editedImage && !isProcessing && (
+                    {editedImage && !isProcessing && !isCompressing && (
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -297,16 +309,21 @@ function MainApp() {
                 </div>
 
                 <button
-                  disabled={!originalImage || !instruction || isProcessing}
+                  disabled={!originalImage || !instruction || isProcessing || isCompressing}
                   onClick={processImage}
                   className={cn(
                     "w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md",
-                    !originalImage || !instruction || isProcessing
+                    !originalImage || !instruction || isProcessing || isCompressing
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
                   )}
                 >
-                  {isProcessing ? (
+                  {isCompressing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      A preparar imagem...
+                    </>
+                  ) : isProcessing ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       A processar...
