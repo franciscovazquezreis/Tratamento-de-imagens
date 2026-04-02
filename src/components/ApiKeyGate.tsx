@@ -5,18 +5,17 @@ import { Wand2, Key, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function ApiKeyGate({ children }: { children: React.ReactNode }) {
-  const hasServerKey = process.env.HAS_SERVER_KEY;
   const { apiKey, setApiKey } = useApiKey();
   const [inputValue, setInputValue] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Mode A: Server key exists, or Mode B: User has provided a valid key
-  if (hasServerKey || apiKey) {
+  // Mode B: User has provided a valid key
+  if (apiKey) {
     return <>{children}</>;
   }
 
-  // Mode B: Prompt for key
+  // Prompt for key
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
